@@ -33,6 +33,7 @@
 #include <linux/sched.h>
 #include <linux/poll.h>
 #include <linux/delay.h>  // msleep
+#include <linux/version.h>
 //#include <linux/atomic.h>
 
 #if defined(CONFIG_ARCH_MESON64_ODROIDC2)
@@ -127,7 +128,11 @@ static void init_irq_tasklet_data_slots(void) {
 }
 
 // It is required for automatic setting of permissions to created devices
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
 static char* gpio_ts_devnode(struct device* dev, umode_t* mode) {
+#else
+static char* gpio_ts_devnode(const struct device* dev, umode_t* mode) {
+#endif
     if (mode != NULL) *mode = 0666;
     return NULL;
 }
@@ -167,7 +172,11 @@ static int __init gpio_ts_init(void) {
     err = alloc_chrdev_region(&gpio_ts_dev, 0, n_of_gpios, THIS_MODULE->name);
     if (err != 0) return err;
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
     gpio_ts_class = class_create(THIS_MODULE, GPIO_TS_CLASS_NAME);
+#else
+    gpio_ts_class = class_create(GPIO_TS_CLASS_NAME);
+#endif
     if (IS_ERR(gpio_ts_class)) {
         unregister_chrdev_region(gpio_ts_dev, n_of_gpios);
         return -EINVAL;
