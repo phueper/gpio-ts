@@ -81,7 +81,6 @@ The driver file `gpio-ts.ko` is created in folder `~/gpio-ts`.
 
 #### Building on Banana Pi M3
 Building Linux kernel module on BPI-M3 is currently a nightmare. I finally figured out how to cross-compile it on another machine and after some hacks I was able to load and use it. But I don't remember all steps I did to achieve it. To make your life easier I provided compiled driver for the current BPI-M3 kernel. Take it from folder `bpi-m3-kernel-3.4.39`.
-
 ### Loading and unloading the driver.
 ##### Important note for Banana Pi M3
 Not all GPIOs allow to set interruptions handler. This is a hardware limitation. The following GPIO numbers are supported on BPI-M3:    
@@ -91,6 +90,15 @@ See output of command `gpio readall` to find these GPIOs on the connector.
 #### Module parameters:
 ##### gpios 
 The comma-separated list of GPIOs that will be served by this driver. Device `/dev/gpiots*` will be created for each GPIO from this list.
+
+**NOTE:** in Kernel 6.6 and later, the gpio numbers are no longer 0 based, refer to `/sys/kernel/debug/gpio` file to get the new correct GPIO number, e.g.
+```shell
+$ cat /sys/kernel/debug/gpio | grep GPIO27
+ gpio-539 (GPIO27              |gpio_ts             ) in  hi IRQ 
+```
+so the new GPIO number for GPIO 27 would be 539.
+Also, if you'd like to use this with f007th-rpi you will probably have to adapt the MAX_GPIO define, otherwise 539 will be an invalid GPIO number
+
 ##### min_duration
 Minimum duration of the same level to be accepted. This is an optional parameter. It sets the default value that can be changed for a particular GPIO by user application.  
 ##### max_duration
